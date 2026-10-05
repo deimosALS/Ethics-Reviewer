@@ -139,6 +139,10 @@
     .oath-feedback { min-height: 26px; margin: 15px 0 0; font-weight: 750; }
     .oath-feedback.good { color: var(--correct); }
     .oath-feedback.bad { color: var(--wrong); }
+    .oath-review { margin-top: 16px; padding: 15px 17px; border: 1px solid var(--line); border-left: 4px solid var(--wrong); border-radius: 10px; background: var(--surface-2); }
+    .oath-review-title { margin: 0 0 7px; color: var(--wrong); font-weight: 800; }
+    .oath-review-list { margin: 0; padding-left: 22px; }
+    .oath-review-list li + li { margin-top: 5px; }
     .oath-actions { justify-content: space-between; gap: 10px; }
     @media (max-width: 560px) { .mode-grid, .penalty-key { grid-template-columns: 1fr; } .mode-card { min-height: 125px; } }
 
@@ -255,6 +259,7 @@
           <button class="action secondary-action" id="oath-reset-button" type="button">Reset run</button>
           <button class="action" id="oath-check-button" type="button">Check answers</button>
         </div>
+        <div class="oath-review hidden" id="oath-review" aria-live="polite"></div>
       </div>
     </section>
 
@@ -411,6 +416,7 @@
       progressFill: document.getElementById("oath-progress-fill"),
       text: document.getElementById("oath-text"),
       feedback: document.getElementById("oath-feedback"),
+      review: document.getElementById("oath-review"),
       check: document.getElementById("oath-check-button"),
       reset: document.getElementById("oath-reset-button"),
       appNote: document.getElementById("app-note"),
@@ -426,6 +432,7 @@
     let oathInputs = [];
     let oathStarted = false;
     let oathCompleted = false;
+    let oathReviewItems = [];
 
     function shuffled(items) {
       const copy = [...items];
@@ -599,7 +606,9 @@
       const allWords = [];
       oathParagraphs.forEach((paragraph, paragraphIndex) => {
         for (const match of paragraph.matchAll(wordPattern)) {
-          if (match[0].toLowerCase() !== "name") allWords.push({ id: `${paragraphIndex}:${match.index}`, answer: match[0] });
+          if (!["name", "and", "the"].includes(match[0].toLowerCase())) {
+            allWords.push({ id: `${paragraphIndex}:${match.index}`, answer: match[0] });
+          }
         }
       });
       const hiddenWords = new Set(shuffled(allWords).slice(0, blankTotal).map(word => word.id));
@@ -646,6 +655,24 @@
       oathUi.progressFill.style.width = `${oathCompleted ? 100 : oathLevel * 10}%`;
       oathUi.feedback.textContent = message;
       oathUi.feedback.className = `oath-feedback${tone ? ` ${tone}` : ""}`;
+      oathUi.review.replaceChildren();
+      if (oathReviewItems.length) {
+        const title = document.createElement("p");
+        title.className = "oath-review-title";
+        title.textContent = "Words to review";
+        const list = document.createElement("ul");
+        list.className = "oath-review-list";
+        oathReviewItems.forEach(({ blankNumber, entered, answer }) => {
+          const item = document.createElement("li");
+          const response = entered ? `you entered “${entered}”` : "you left it blank";
+          item.textContent = `Blank ${blankNumber}: ${response}; the correct word is “${answer}”.`;
+          list.append(item);
+        });
+        oathUi.review.append(title, list);
+        oathUi.review.classList.remove("hidden");
+      } else {
+        oathUi.review.classList.add("hidden");
+      }
       oathUi.check.disabled = oathCompleted;
       oathUi.check.textContent = oathCompleted ? "Completed" : "Check answers";
     }
@@ -654,11 +681,17 @@
       if (oathCompleted) return;
       const misses = oathInputs.filter(({ element, answer }) => normalizeOathWord(element.value.trim()) !== normalizeOathWord(answer));
       if (misses.length) {
+        oathReviewItems = misses.map(({ element, answer }) => ({
+          blankNumber: oathInputs.findIndex(input => input.element === element) + 1,
+          entered: element.value.trim(),
+          answer
+        }));
         oathLevel = 1;
         oathCompleted = false;
         renderOathLevel(`${misses.length} blank${misses.length === 1 ? " was" : "s were"} incorrect. Your run reset to Level 1 with new blanks.`, "bad");
         return;
       }
+      oathReviewItems = [];
       if (oathLevel === 10) {
         oathCompleted = true;
         renderOathLevel("You completed all ten levels. Reset the run whenever you want a new randomized practice set.", "good");
@@ -672,6 +705,7 @@
     function resetOathRun() {
       oathLevel = 1;
       oathCompleted = false;
+      oathReviewItems = [];
       renderOathLevel("Run reset. Level 1 has a fresh set of randomized blanks.");
     }
 
