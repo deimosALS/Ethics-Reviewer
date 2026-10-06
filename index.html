@@ -144,6 +144,30 @@
     .oath-review-list { margin: 0; padding-left: 22px; }
     .oath-review-list li + li { margin-top: 5px; }
     .oath-actions { justify-content: space-between; gap: 10px; }
+    .oath-mode-switch { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0 0 24px; padding: 5px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface-2); }
+    .oath-mode-button { min-height: 42px; padding: 8px 12px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); font-weight: 750; cursor: pointer; }
+    .oath-mode-button[aria-pressed="true"] { background: var(--surface); color: var(--brand); box-shadow: 0 1px 4px #17263312; }
+    .oath-mode-button:focus-visible, .oath-full-input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+    .oath-full-input { display: block; width: 100%; min-height: 270px; margin-top: 8px; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); font: 16px/1.65 ui-serif, Georgia, "Times New Roman", serif; resize: vertical; }
+    .oath-full-label { display: block; margin-top: 17px; font-weight: 750; }
+    .oath-word { padding: 0 .08em; border-radius: .2em; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+    .oath-word.is-correct { background: var(--correct-bg); color: var(--correct); }
+    .oath-word.is-wrong { background: var(--wrong-bg); color: var(--wrong); text-decoration: underline wavy; text-decoration-thickness: 1px; }
+    .oath-full-result { margin-top: 18px; }
+    .oath-full-result .oath-text { line-height: 2.25; }
+    .oath-attempt-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+    .bar-area { padding: clamp(22px, 5vw, 34px); }
+    .bar-area h2 { margin-bottom: 12px; }
+    .bar-controls { display: flex; justify-content: space-between; align-items: end; gap: 14px; margin: 18px 0; }
+    .bar-filter-label { display: grid; gap: 5px; color: var(--muted); font-size: 13px; font-weight: 700; }
+    .bar-filter { min-height: 42px; max-width: 100%; padding: 8px 32px 8px 11px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); color: var(--ink); font: inherit; }
+    .bar-topic { margin: 0 0 8px; color: var(--brand); font-size: 14px; font-weight: 800; }
+    .bar-source { margin: 0 0 13px; color: var(--muted); font-size: 13px; }
+    .bar-prompt { margin: 0; padding: 20px; border-radius: 14px; background: var(--surface-2); font-family: ui-serif, Georgia, "Times New Roman", serif; font-size: clamp(16px, 2.2vw, 19px); line-height: 1.75; white-space: pre-wrap; }
+    .bar-note { margin: 13px 0 0; color: var(--muted); font-size: 13px; }
+    .bar-actions { justify-content: space-between; gap: 10px; }
+    .bar-actions .action { min-width: 125px; }
+    @media (max-width: 560px) { .bar-controls { align-items: stretch; flex-direction: column; } .bar-filter { width: 100%; } }
     @media (max-width: 560px) { .mode-grid, .penalty-key { grid-template-columns: 1fr; } .mode-card { min-height: 125px; } }
 
     .hidden { display: none !important; }
@@ -169,14 +193,15 @@
     </header>
 
     <section class="intro" aria-labelledby="page-title">
-      <p class="eyebrow">Case and oath practice</p>
+      <p class="eyebrow">Case and ethics practice</p>
       <h1 id="page-title">Legal Ethics Study</h1>
-      <p class="subtitle">Practice Canon VI case classifications or memorize the Lawyer’s Oath with randomized blanks.</p>
+      <p class="subtitle">Practice Canon VI case classifications, review Bar ethics questions, or memorize the Lawyer’s Oath.</p>
     </section>
 
     <nav class="app-tabs" role="tablist" aria-label="Study activities">
       <button class="tab-button" id="case-tab" type="button" role="tab" aria-selected="true" aria-controls="case-card">Canon VI Cases</button>
       <button class="tab-button" id="oath-tab" type="button" role="tab" aria-selected="false" aria-controls="oath-card">Lawyer’s Oath</button>
+      <button class="tab-button" id="bar-tab" type="button" role="tab" aria-selected="false" aria-controls="bar-card">Bar Ethics Questions</button>
     </nav>
 
     <section class="quiz-card" id="case-card" role="tabpanel" aria-labelledby="case-tab" aria-label="Canon VI case penalty quiz">
@@ -249,17 +274,73 @@
         <div class="track" role="progressbar" aria-label="Oath level progress" aria-valuemin="1" aria-valuemax="10" aria-valuenow="1"><div class="track-fill" id="oath-progress-fill"></div></div>
       </div>
       <div class="oath-area">
-        <p class="eyebrow">Memory practice</p>
-        <h2>Fill in the Lawyer’s Oath</h2>
-        <p class="oath-instructions">Enter every missing word, then check your answers. Each level adds three blanks. One mistake resets the run to Level 1 with new random blanks.</p>
-        <div class="oath-text" id="oath-text" aria-label="Lawyer’s Oath with missing words"></div>
-        <p class="oath-note">“(name)” is a placeholder for your name. The closing “So help me, God” applies to oaths and is omitted for affirmations.</p>
-        <p class="oath-feedback" id="oath-feedback" aria-live="polite"></p>
-        <div class="actions oath-actions">
-          <button class="action secondary-action" id="oath-reset-button" type="button">Reset run</button>
-          <button class="action" id="oath-check-button" type="button">Check answers</button>
+        <div class="oath-mode-switch" role="group" aria-label="Choose Lawyer’s Oath practice mode">
+          <button class="oath-mode-button" id="oath-level-mode-button" type="button" aria-pressed="true">10 levels</button>
+          <button class="oath-mode-button" id="oath-full-mode-button" type="button" aria-pressed="false">Start from zero</button>
         </div>
-        <div class="oath-review hidden" id="oath-review" aria-live="polite"></div>
+        <div id="oath-level-mode-panel">
+          <p class="eyebrow">Memory practice</p>
+          <h2>Fill in the Lawyer’s Oath</h2>
+          <p class="oath-instructions">Enter every missing word, then check your answers. Each level adds three blanks. One mistake resets the run to Level 1 with new random blanks.</p>
+          <div class="oath-text" id="oath-text" aria-label="Lawyer’s Oath with missing words"></div>
+          <p class="oath-note">“(name)” is a placeholder for your name. The closing “So help me, God” applies to oaths and is omitted for affirmations.</p>
+          <p class="oath-feedback" id="oath-feedback" aria-live="polite"></p>
+          <div class="actions oath-actions">
+            <button class="action secondary-action" id="oath-reset-button" type="button">Reset run</button>
+            <button class="action" id="oath-check-button" type="button">Check answers</button>
+          </div>
+          <div class="oath-review hidden" id="oath-review" aria-live="polite"></div>
+        </div>
+        <div id="oath-full-mode-panel" class="hidden">
+          <p class="eyebrow">Full recall</p>
+          <h2>Start from zero</h2>
+          <p class="oath-instructions">Type the complete Lawyer’s Oath from memory. After you check, the correct words will be highlighted green and wrong or missing words red. Capitalization and punctuation do not affect the check.</p>
+          <label class="oath-full-label" for="oath-full-input">Write the oath here</label>
+          <textarea class="oath-full-input" id="oath-full-input" autocomplete="off" spellcheck="false" placeholder="I, (name), do solemnly swear (affirm)…"></textarea>
+          <p class="oath-note">Keep “(name)” as a placeholder; it is shown in the answer and is not scored. You can include “So help me, God” as written in the oath.</p>
+          <p class="oath-feedback" id="oath-full-feedback" aria-live="polite"></p>
+          <div class="actions oath-actions">
+            <button class="action secondary-action" id="oath-full-reset-button" type="button">Start over</button>
+            <button class="action" id="oath-full-check-button" type="button">Check the full oath</button>
+          </div>
+          <div class="oath-full-result hidden" id="oath-full-result" aria-live="polite">
+            <h3 class="oath-review-title">Your attempt</h3>
+            <div class="oath-text oath-attempt-text" id="oath-full-attempt"></div>
+            <h3 class="oath-review-title">Correct wording</h3>
+            <div class="oath-text" id="oath-full-corrected"></div>
+            <div class="oath-review" id="oath-full-review"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="quiz-card hidden" id="bar-card" role="tabpanel" aria-labelledby="bar-tab" aria-label="Past Bar examination ethics questions">
+      <div class="quiz-top">
+        <div class="topline"><span class="question-count" id="bar-question-count">Question 1 of 9</span><span class="score" id="bar-source-year">2024 Bar</span></div>
+        <div class="track" role="progressbar" aria-label="Bar ethics question progress" aria-valuemin="1" aria-valuemax="9" aria-valuenow="1"><div class="track-fill" id="bar-progress-fill"></div></div>
+      </div>
+      <div class="bar-area">
+        <p class="eyebrow">Past Bar exam practice</p>
+        <h2>Canon I, Canon II, and CPRA</h2>
+        <p class="home-copy">Review the question, then try answering it aloud or in your notes. Use the topic filter to focus your practice.</p>
+        <div class="bar-controls">
+          <p class="bar-topic" id="bar-topic">CPRA · disciplinary proceedings</p>
+          <label class="bar-filter-label" for="bar-filter">Filter questions
+            <select class="bar-filter" id="bar-filter">
+              <option value="all">All 9 questions</option>
+              <option value="canon1">Canon I · Independence</option>
+              <option value="canon2">Canon II · Propriety</option>
+              <option value="cpra">Other CPRA topics</option>
+            </select>
+          </label>
+        </div>
+        <p class="bar-source" id="bar-source"></p>
+        <blockquote class="bar-prompt" id="bar-prompt"></blockquote>
+        <p class="bar-note">These are question prompts only; the supplied exam PDFs do not include suggested answers.</p>
+        <div class="actions bar-actions">
+          <button class="action secondary-action" id="bar-previous-button" type="button">← Previous</button>
+          <button class="action" id="bar-next-button" type="button">Next question →</button>
+        </div>
       </div>
     </section>
 
@@ -314,6 +395,53 @@
       "I shall conscientiously and courageously work for justice, as well as safeguard the rights and meaningful freedoms of all persons, identities and communities. I shall ensure greater and equitable access to justice.",
       "I shall do no falsehood nor shall I pervert the law to unjustly favor nor prejudice anyone. I shall faithfully discharge these duties and responsibilities to the best of my ability, with integrity, and utmost civility. I impose all these upon myself without mental reservation nor purpose of evasion.",
       "So help me, God."
+    ];
+    const barEthicsQuestions = [
+      {
+        year: "2024", number: 16, category: "cpra", topic: "CPRA · lawyer discipline",
+        source: "2024 Bar Examinations · Remedial Law, Legal and Judicial Ethics · Question 16",
+        prompt: "Atty. Perez induced Eunice to invest money in a trading business with guaranteed profits. Atty. Perez assured Eunice that the business was doing well. Eunice agreed and delivered to Atty. Perez PHP 10,000,000.00 as capital investment. Atty. Perez issued to Eunice postdated checks with amounts representing her capital and expected profits. Thereafter, Eunice discovered that the trading business was a sham and that the checks were all drawn against a closed account. Aggrieved, Eunice filed against Atty. Perez a criminal action for estafa and a disbarment complaint for gross misconduct. Atty. Perez sought to suspend the disciplinary charge against him pending resolution of the criminal proceedings. Atty. Perez explained that his innocence or acquittal constitutes a prejudicial question to his administrative liability arising from similar incidents. Does the pending criminal action constitute a prejudicial question to warrant the suspension of the disbarment case? Explain."
+      },
+      {
+        year: "2024", number: 18, category: "canon2", topic: "Canon II · Propriety · paralegal supervision",
+        source: "2024 Bar Examinations · Remedial Law, Legal and Judicial Ethics · Question 18",
+        prompt: "Atty. Cassandra, a solo legal practitioner, hired Sandro as a legal researcher. Atty. Cassandra has an appeal brief due on September 25, 2024. However, Atty. Cassandra contracted monkeypox and suffered high fever, severe headache, and muscle fatigue. Atty. Cassandra then instructed Sandro to finish the appeal brief, affix her signature, and file the pleading with the Court of Appeals. Did Atty. Cassandra violate any provision of the Code of Professional Responsibility and Accountability? Explain."
+      },
+      {
+        year: "2024", number: 19, category: "cpra", topic: "CPRA · lawyer’s professional duties",
+        source: "2024 Bar Examinations · Remedial Law, Legal and Judicial Ethics · Question 19",
+        prompt: "Francis, through Atty. Kyle, charged Madam Toyoh with violation of Presidential Decree No. 1612 or the Anti-Fencing Law for purchasing a vintage vehicle knowing that it proceeds from the crime of carnapping. Madam Toyoh hired Atty. Caleb as counsel and confessed to him that she is guilty of the offense. Atty. Caleb promised Madam Toyoh that he will do anything to prove her innocence. Atty. Caleb then reached out to Francis and negotiated for an amicable settlement that resulted in the execution of a release, quitclaim, and waiver of rights. Atty. Kyle discovered the compromise agreement and noticed some unfair provisions. Atty. Kyle filed against Atty. Caleb an administrative case for impropriety. On the other hand, Atty. Caleb countered that the ethical standards in the legal profession mandates lawyers to encourage clients to avoid or settle any controversy. Atty. Caleb added that the compromise agreement is beneficial to both parties. Did Atty. Caleb violate any provision of the Code of Professional Responsibility and Accountability? Explain."
+      },
+      {
+        year: "2024", number: 20, category: "canon2", topic: "Canon II · Propriety · social media",
+        source: "2024 Bar Examinations · Remedial Law, Legal and Judicial Ethics · Question 20",
+        prompt: "Atty. Diwata, a suspended lawyer, created a professional social media page and maintained poser accounts which she used across various social networks. Atty. Diwata, during her livestream, spread fake news that the Court’s Strategic Plan for Judicial Innovations 2022-2027 failed to achieve its major target outcomes and had prejudiced the legal profession. Particularly, Atty. Diwata launched a social media campaign against the Code of Professional Responsibility and Accountability and claimed that it is akin to an ex post facto law because its provisions are given retroactive effect. May the Supreme Court discipline Atty. Diwata for her social media activities? Explain."
+      },
+      {
+        year: "2025", number: 15, category: "cpra", topic: "CPRA · notarial practice",
+        source: "2025 Bar Examinations · Remedial Law, Legal and Judicial Ethics with Practical Exercises · Question 15",
+        prompt: "A charged Atty. X with violation of the 2004 Rules on Notarial Practice for notarizing a Unilateral Deed of Absolute Sale and an Affidavit of Confirmation of Sale where the vendee was Atty. X’s paternal uncle, Y. Atty. X countered that since his uncle was not a signatory to the said documents, he was not disqualified from performing a notarial act under Rule IV, Section 3 of the 2004 Rules on Notarial Practice. Is the contention of Atty. X correct? Reason(s)."
+      },
+      {
+        year: "2025", number: 17, category: "canon2", topic: "Canon II · Propriety · sub judice and suspension",
+        source: "2025 Bar Examinations · Remedial Law, Legal and Judicial Ethics with Practical Exercises · Question 17",
+        prompt: "Under Resolution dated November 12, 2023, the Supreme Court found Atty. X liable for breach of the sub judice rule and imposed on him the penalty of suspension from the practice of law for six months, effective immediately. On May 20, 2024, Atty. X submitted to the Supreme Court a sworn statement declaring, among others, that he desisted from the practice of law during his six-month suspension beginning November 12, 2023 when he received the Resolution until May 12, 2024. May Atty. X resume his practice of law? Reason(s)."
+      },
+      {
+        year: "2026", number: 17, category: "canon1", topic: "Canon I · Independence",
+        source: "2026 Bar Examinations · Remedial Law, Legal and Judicial Ethics with Practical Exercises · Question 17",
+        prompt: "In pursuance of its advocacy against government corruption, the Samahan ng mga Manananggol sa Pilipinas (SMP), represented by Atty. Martir, filed a Complaint for plunder against Senator Sobre before the Ombudsman. Atty. Martir encouraged the members of SMP to picket and stage a hunger strike around the Ombudsman premises while shouting and repeatedly chanting, ‘Senator Sobre, ikulong na yan.’ Irked, Senator Sobre filed an administrative case against Atty. Martir for exerting pressure and influence against the court. Atty. Martir countered that picketing, coupled with a hunger strike, is a valid exercise of one’s right to freedom of expression. Is Atty. Martir administratively liable? Explain."
+      },
+      {
+        year: "2026", number: 18, category: "canon2", topic: "Canon II · Propriety · advertising legal services",
+        source: "2026 Bar Examinations · Remedial Law, Legal and Judicial Ethics with Practical Exercises · Question 18",
+        prompt: "Atty. Gandha joined the Bb. Pilipinas competition where she walked the pageant stage in swimwear, confidently flaunting her perfect curves. During the question-and-answer portion, she was asked about her education and occupation. She proudly announced that she is a lawyer with expertise in annulment of marriage cases and that she charges minimal lawyer’s fees. She added that she can be reached at her law office ‘Atty. Gandha and Associates’ located at Room 400, 2nd floor, Sacramento Bldg., Quezon City. Is this a permissible advertisement? Explain."
+      },
+      {
+        year: "2026", number: 19, category: "cpra", topic: "CPRA · conflict of interest",
+        source: "2026 Bar Examinations · Remedial Law, Legal and Judicial Ethics with Practical Exercises · Question 19",
+        prompt: "Atty. Panalo and Atty. Galiling were recent Bar passers. They both decided to join the Public Attorney’s Office (PAO). Atty. Panalo represents Chas in a civil suit she filed against Dennis for the injuries she sustained as a passenger of the bus driven by Dennis. With no means to hire a private lawyer, Dennis sought the assistance of PAO and Atty. Galiling was assigned to defend him. Dennis knew that the PAO also represents Chas and signed a written informed consent thereto. Chas moved to disqualify Atty. Galiling as Dennis’s counsel for conflict of interest. Is the motion of Chas meritorious? Explain."
+      }
     ];
     const QUICK_COUNT = 10;
     const tierNames = { serious: "Serious", less: "Less serious", light: "Light" };
@@ -408,19 +536,46 @@
     const oathUi = {
       caseTab: document.getElementById("case-tab"),
       oathTab: document.getElementById("oath-tab"),
+      barTab: document.getElementById("bar-tab"),
       caseCard: document.getElementById("case-card"),
       oathCard: document.getElementById("oath-card"),
+      barCard: document.getElementById("bar-card"),
+      modeProgress: document.querySelector("#oath-card .quiz-top"),
       level: document.getElementById("oath-level"),
       blankCount: document.getElementById("oath-blank-count"),
       progress: document.querySelector('#oath-card [role="progressbar"]'),
       progressFill: document.getElementById("oath-progress-fill"),
       text: document.getElementById("oath-text"),
+      levelModeButton: document.getElementById("oath-level-mode-button"),
+      fullModeButton: document.getElementById("oath-full-mode-button"),
+      levelModePanel: document.getElementById("oath-level-mode-panel"),
+      fullModePanel: document.getElementById("oath-full-mode-panel"),
       feedback: document.getElementById("oath-feedback"),
       review: document.getElementById("oath-review"),
       check: document.getElementById("oath-check-button"),
       reset: document.getElementById("oath-reset-button"),
+      fullInput: document.getElementById("oath-full-input"),
+      fullFeedback: document.getElementById("oath-full-feedback"),
+      fullCheck: document.getElementById("oath-full-check-button"),
+      fullReset: document.getElementById("oath-full-reset-button"),
+      fullResult: document.getElementById("oath-full-result"),
+      fullAttempt: document.getElementById("oath-full-attempt"),
+      fullCorrected: document.getElementById("oath-full-corrected"),
+      fullReview: document.getElementById("oath-full-review"),
       appNote: document.getElementById("app-note"),
       cpraLink: document.getElementById("cpra-link")
+    };
+    const barUi = {
+      count: document.getElementById("bar-question-count"),
+      year: document.getElementById("bar-source-year"),
+      progress: document.querySelector('#bar-card [role="progressbar"]'),
+      progressFill: document.getElementById("bar-progress-fill"),
+      topic: document.getElementById("bar-topic"),
+      source: document.getElementById("bar-source"),
+      prompt: document.getElementById("bar-prompt"),
+      filter: document.getElementById("bar-filter"),
+      previous: document.getElementById("bar-previous-button"),
+      next: document.getElementById("bar-next-button")
     };
 
     let sessionCases = [];
@@ -433,6 +588,8 @@
     let oathStarted = false;
     let oathCompleted = false;
     let oathReviewItems = [];
+    let barQuestions = [...barEthicsQuestions];
+    let barPosition = 0;
 
     function shuffled(items) {
       const copy = [...items];
@@ -709,17 +866,267 @@
       renderOathLevel("Run reset. Level 1 has a fresh set of randomized blanks.");
     }
 
+    function selectOathMode(mode) {
+      const showLevels = mode === "levels";
+      oathUi.levelModeButton.setAttribute("aria-pressed", String(showLevels));
+      oathUi.fullModeButton.setAttribute("aria-pressed", String(!showLevels));
+      oathUi.modeProgress.classList.toggle("hidden", !showLevels);
+      oathUi.levelModePanel.classList.toggle("hidden", !showLevels);
+      oathUi.fullModePanel.classList.toggle("hidden", showLevels);
+      if (showLevels && !oathStarted) renderOathLevel();
+      if (!showLevels) oathUi.fullInput.focus();
+    }
+
+    function isOathNamePlaceholder(text, start, end, word) {
+      return word.toLowerCase() === "name" && text[start - 1] === "(" && text[end] === ")";
+    }
+
+    function collectExpectedOathWords() {
+      const wordPattern = /[\p{L}\p{N}]+(?:[’'-][\p{L}\p{N}]+)*/gu;
+      const words = [];
+      oathParagraphs.forEach((paragraph, paragraphIndex) => {
+        for (const match of paragraph.matchAll(wordPattern)) {
+          const start = match.index;
+          const end = start + match[0].length;
+          if (!isOathNamePlaceholder(paragraph, start, end, match[0])) {
+            words.push({ answer: match[0], paragraphIndex, start, end });
+          }
+        }
+      });
+      return words;
+    }
+
+    function collectEnteredOathWords(text) {
+      const wordPattern = /[\p{L}\p{N}]+(?:[’'-][\p{L}\p{N}]+)*/gu;
+      const words = [];
+      for (const match of text.matchAll(wordPattern)) {
+        const start = match.index;
+        const end = start + match[0].length;
+        if (!isOathNamePlaceholder(text, start, end, match[0])) {
+          words.push({ answer: match[0], start, end });
+        }
+      }
+      return words;
+    }
+
+    function alignOathWords(expectedWords, enteredWords) {
+      const rowCount = expectedWords.length + 1;
+      const columnCount = enteredWords.length + 1;
+      const edits = Array.from({ length: rowCount }, () => Array(columnCount).fill(0));
+      for (let i = 0; i < rowCount; i++) edits[i][0] = i;
+      for (let j = 0; j < columnCount; j++) edits[0][j] = j;
+
+      for (let i = 1; i < rowCount; i++) {
+        for (let j = 1; j < columnCount; j++) {
+          const substitutionCost = normalizeOathWord(expectedWords[i - 1].answer)
+            === normalizeOathWord(enteredWords[j - 1].answer) ? 0 : 1;
+          edits[i][j] = Math.min(
+            edits[i - 1][j] + 1,
+            edits[i][j - 1] + 1,
+            edits[i - 1][j - 1] + substitutionCost
+          );
+        }
+      }
+
+      const alignment = Array(expectedWords.length);
+      const enteredAlignment = Array(enteredWords.length);
+      const extraWords = [];
+      let i = expectedWords.length;
+      let j = enteredWords.length;
+      while (i > 0 || j > 0) {
+        if (i > 0 && j > 0) {
+          const sameWord = normalizeOathWord(expectedWords[i - 1].answer)
+            === normalizeOathWord(enteredWords[j - 1].answer);
+          const cost = sameWord ? 0 : 1;
+          if (edits[i][j] === edits[i - 1][j - 1] + cost) {
+            alignment[i - 1] = {
+              status: sameWord ? "correct" : "wrong",
+              entered: enteredWords[j - 1].answer
+            };
+            enteredAlignment[j - 1] = {
+              status: sameWord ? "correct" : "wrong",
+              expected: expectedWords[i - 1].answer
+            };
+            i--;
+            j--;
+            continue;
+          }
+        }
+        if (i > 0 && edits[i][j] === edits[i - 1][j] + 1) {
+          alignment[i - 1] = { status: "missing", entered: "" };
+          i--;
+          continue;
+        }
+        if (j > 0) {
+          extraWords.unshift(enteredWords[j - 1]);
+          enteredAlignment[j - 1] = { status: "extra" };
+          j--;
+        }
+      }
+      return { alignment, enteredAlignment, extraWords };
+    }
+
+    function renderOathAttempt(text, enteredAlignment) {
+      oathUi.fullAttempt.replaceChildren();
+      const wordPattern = /[\p{L}\p{N}]+(?:[’'-][\p{L}\p{N}]+)*/gu;
+      let cursor = 0;
+      let enteredIndex = 0;
+      for (const match of text.matchAll(wordPattern)) {
+        const start = match.index;
+        const end = start + match[0].length;
+        oathUi.fullAttempt.append(document.createTextNode(text.slice(cursor, start)));
+        if (isOathNamePlaceholder(text, start, end, match[0])) {
+          oathUi.fullAttempt.append(document.createTextNode(match[0]));
+        } else {
+          const result = enteredAlignment[enteredIndex] || { status: "extra" };
+          const word = document.createElement("span");
+          word.className = `oath-word ${result.status === "correct" ? "is-correct" : "is-wrong"}`;
+          word.textContent = match[0];
+          if (result.status === "wrong") word.title = `Expected “${result.expected}”.`;
+          if (result.status === "extra") word.title = "Extra word.";
+          word.setAttribute("aria-label", result.status === "correct" ? `${match[0]}, correct` : `${match[0]}, incorrect`);
+          oathUi.fullAttempt.append(word);
+          enteredIndex++;
+        }
+        cursor = end;
+      }
+      oathUi.fullAttempt.append(document.createTextNode(text.slice(cursor)));
+    }
+
+    function renderOathRecallResult(expectedWords, alignment, extraWords) {
+      oathUi.fullCorrected.replaceChildren();
+      let expectedIndex = 0;
+      oathParagraphs.forEach(paragraph => {
+        const paragraphElement = document.createElement("p");
+        paragraphElement.className = "oath-paragraph";
+        let cursor = 0;
+        const wordPattern = /[\p{L}\p{N}]+(?:[’'-][\p{L}\p{N}]+)*/gu;
+        for (const match of paragraph.matchAll(wordPattern)) {
+          const start = match.index;
+          const end = start + match[0].length;
+          paragraphElement.append(document.createTextNode(paragraph.slice(cursor, start)));
+          if (isOathNamePlaceholder(paragraph, start, end, match[0])) {
+            paragraphElement.append(document.createTextNode(match[0]));
+          } else {
+            const result = alignment[expectedIndex] || { status: "missing", entered: "" };
+            const word = document.createElement("span");
+            word.className = `oath-word ${result.status === "correct" ? "is-correct" : "is-wrong"}`;
+            word.textContent = match[0];
+            if (result.status === "wrong") word.title = `You entered “${result.entered}”; correct word: “${match[0]}”.`;
+            if (result.status === "missing") word.title = `Missing word: “${match[0]}”.`;
+            word.setAttribute("aria-label", result.status === "correct" ? `${match[0]}, correct` : `${match[0]}, incorrect or missing`);
+            paragraphElement.append(word);
+            expectedIndex++;
+          }
+          cursor = end;
+        }
+        paragraphElement.append(document.createTextNode(paragraph.slice(cursor)));
+        oathUi.fullCorrected.append(paragraphElement);
+      });
+
+      const correctCount = alignment.filter(item => item && item.status === "correct").length;
+      const mistakes = alignment.filter(item => item && item.status !== "correct").length + extraWords.length;
+      oathUi.fullFeedback.textContent = mistakes
+        ? `${correctCount} of ${expectedWords.length} scored words are correct. Green words matched; red words are wrong or missing.`
+        : `Perfect: all ${expectedWords.length} scored words are correct.`;
+      oathUi.fullFeedback.className = `oath-feedback${mistakes ? " bad" : " good"}`;
+
+      oathUi.fullReview.replaceChildren();
+      if (mistakes) {
+        const title = document.createElement("p");
+        title.className = "oath-review-title";
+        title.textContent = "Mistakes to review";
+        const list = document.createElement("ul");
+        list.className = "oath-review-list";
+        alignment.forEach((item, index) => {
+          if (!item || item.status === "correct") return;
+          const line = document.createElement("li");
+          line.textContent = item.status === "wrong"
+            ? `Expected “${expectedWords[index].answer}”; you entered “${item.entered}”.`
+            : `Missing “${expectedWords[index].answer}”.`;
+          list.append(line);
+        });
+        extraWords.forEach(word => {
+          const line = document.createElement("li");
+          line.textContent = `Extra word: “${word.answer}”.`;
+          list.append(line);
+        });
+        oathUi.fullReview.append(title, list);
+        oathUi.fullReview.style.borderLeftColor = "var(--wrong)";
+      } else {
+        const title = document.createElement("p");
+        title.className = "oath-review-title";
+        title.style.color = "var(--correct)";
+        title.textContent = "No mistakes — every scored word is correct.";
+        oathUi.fullReview.append(title);
+        oathUi.fullReview.style.borderLeftColor = "var(--correct)";
+      }
+      oathUi.fullResult.classList.remove("hidden");
+    }
+
+    function checkFullOath() {
+      const expectedWords = collectExpectedOathWords();
+      const enteredText = oathUi.fullInput.value;
+      const enteredWords = collectEnteredOathWords(enteredText);
+      const { alignment, enteredAlignment, extraWords } = alignOathWords(expectedWords, enteredWords);
+      renderOathAttempt(enteredText, enteredAlignment);
+      renderOathRecallResult(expectedWords, alignment, extraWords);
+    }
+
+    function resetFullOath() {
+      oathUi.fullInput.value = "";
+      oathUi.fullFeedback.textContent = "";
+      oathUi.fullFeedback.className = "oath-feedback";
+      oathUi.fullResult.classList.add("hidden");
+      oathUi.fullInput.focus();
+    }
+
+    function renderBarQuestion() {
+      if (!barQuestions.length) return;
+      const question = barQuestions[barPosition];
+      barUi.count.textContent = `Question ${barPosition + 1} of ${barQuestions.length}`;
+      barUi.year.textContent = `${question.year} Bar`;
+      barUi.topic.textContent = question.topic;
+      barUi.source.textContent = question.source;
+      barUi.prompt.textContent = question.prompt;
+      barUi.progress.setAttribute("aria-valuemax", String(barQuestions.length));
+      barUi.progress.setAttribute("aria-valuenow", String(barPosition + 1));
+      barUi.progressFill.style.width = `${((barPosition + 1) / barQuestions.length) * 100}%`;
+      barUi.previous.disabled = barPosition === 0;
+      barUi.next.disabled = barPosition === barQuestions.length - 1;
+    }
+
+    function changeBarQuestion(step) {
+      barPosition = Math.max(0, Math.min(barQuestions.length - 1, barPosition + step));
+      renderBarQuestion();
+    }
+
+    function filterBarQuestions() {
+      const selectedCategory = barUi.filter.value;
+      barQuestions = selectedCategory === "all"
+        ? [...barEthicsQuestions]
+        : barEthicsQuestions.filter(question => question.category === selectedCategory);
+      barPosition = 0;
+      renderBarQuestion();
+    }
+
     function showStudyTab(tab) {
       const showOath = tab === "oath";
-      oathUi.caseCard.classList.toggle("hidden", showOath);
+      const showBar = tab === "bar";
+      oathUi.caseCard.classList.toggle("hidden", showOath || showBar);
       oathUi.oathCard.classList.toggle("hidden", !showOath);
-      oathUi.caseTab.setAttribute("aria-selected", String(!showOath));
+      oathUi.barCard.classList.toggle("hidden", !showBar);
+      oathUi.caseTab.setAttribute("aria-selected", String(!showOath && !showBar));
       oathUi.oathTab.setAttribute("aria-selected", String(showOath));
+      oathUi.barTab.setAttribute("aria-selected", String(showBar));
       oathUi.appNote.textContent = showOath
         ? "The fill-in-the-blanks practice follows the Lawyer’s Oath wording you supplied."
-        : "Choose a category, then a lettered provision. Any potential or conditional alternative listed for a study entry is accepted. Canon VI §§33–40.";
-      oathUi.cpraLink.classList.toggle("hidden", showOath);
+        : showBar
+          ? "Nine ethics questions extracted from the supplied 2024, 2025, and 2026 Bar examination PDFs."
+          : "Choose a category, then a lettered provision. Any potential or conditional alternative listed for a study entry is accepted. Canon VI §§33–40.";
+      oathUi.cpraLink.classList.toggle("hidden", showOath || showBar);
       if (showOath && !oathStarted) renderOathLevel();
+      if (showBar) renderBarQuestion();
     }
 
     function advance() {
@@ -757,8 +1164,16 @@
     ui.back.addEventListener("click", changeTier);
     oathUi.caseTab.addEventListener("click", () => showStudyTab("cases"));
     oathUi.oathTab.addEventListener("click", () => showStudyTab("oath"));
+    oathUi.barTab.addEventListener("click", () => showStudyTab("bar"));
+    oathUi.levelModeButton.addEventListener("click", () => selectOathMode("levels"));
+    oathUi.fullModeButton.addEventListener("click", () => selectOathMode("full"));
     oathUi.check.addEventListener("click", checkOathAnswers);
     oathUi.reset.addEventListener("click", resetOathRun);
+    oathUi.fullCheck.addEventListener("click", checkFullOath);
+    oathUi.fullReset.addEventListener("click", resetFullOath);
+    barUi.filter.addEventListener("change", filterBarQuestions);
+    barUi.previous.addEventListener("click", () => changeBarQuestion(-1));
+    barUi.next.addEventListener("click", () => changeBarQuestion(1));
   </script>
 </body>
 </html>
