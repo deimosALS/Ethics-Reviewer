@@ -615,7 +615,7 @@
     function tierChoicesFor(caseRecord) {
       const keys = ["serious", "less", "light"];
       if (!mappedOffenses(caseRecord).length) keys.push("none");
-      return shuffled(keys);
+      return keys;
     }
 
     function startSession(mode) {
